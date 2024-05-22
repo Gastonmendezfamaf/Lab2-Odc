@@ -5,5 +5,6 @@
 paint_pixel:
     ADD X0, X1, X2
     BR
+    SUB X0, X1,X2
 
 
