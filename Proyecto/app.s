@@ -17,41 +17,41 @@ main:
 	movk x10, 0x1585, lsl 00
 
 	mov x2, SCREEN_HEIGH         // Y Size
+
+	movz w10, 0x3F38, lsl 00 //Color tablero de negras
+	movk w10, 0x4A, lsl 16
+	
+	movz w11, 0xBDB0, lsl 00 //Color tablero de blancas
+	movk w11, 0xD0, lsl 16
+
+	movk w12, 0x753F, lsl 00 //Color borde de tablero
+	movk w12, 0xD9, lsl 16
+
+	movz x4,60,lsl 00
 loop1:
 	mov x1, SCREEN_WIDTH         // X Size
-loop0:
-	stur w10,[x0]  // Colorear el pixel N
-	add x0,x0,4    // Siguiente pixel
-	sub x1,x1,1    // Decrementar contador X
-	cbnz x1,loop0  // Si no terminó la fila, salto
-	sub x2,x2,1    // Decrementar contador Y
-	cbnz x2,loop1  // Si no es la última fila, salto
-
-	// Ejemplo de uso de gpios
-	mov x9, GPIO_BASE
-
-	// Atención: se utilizan registros w porque la documentación de broadcom
-	// indica que los registros que estamos leyendo y escribiendo son de 32 bits
-
-	// Setea gpios 0 - 9 como lectura
-	str wzr, [x9, GPIO_GPFSEL0]
-
-	// Lee el estado de los GPIO 0 - 31
-	ldr w10, [x9, GPIO_GPLEV0]
-
-	// And bit a bit mantiene el resultado del bit 2 en w10 (notar 0b... es binario)
-	// al inmediato se lo refiere como "máscara" en este caso:
-	// - Al hacer AND revela el estado del bit 2
-	// - Al hacer OR "setea" el bit 2 en 1
-	// - Al hacer AND con el complemento "limpia" el bit 2 (setea el bit 2 en 0)
-	and w11, w10, 0b00000010
-
-	// si w11 es 0 entonces el GPIO 1 estaba liberado
-	// de lo contrario será distinto de 0, (en este caso particular 2)
-	// significando que el GPIO 1 fue presionado
-
-	//---------------------------------------------------------------
-	// Infinite Loop
+	
+loop2:
+	movz x3,60,lsl 00
+	add x0,x0,#80
+square_painter: 
+	bl paint_row
+	add x0,x0,#200
+	add x0,x0,#200
+	sub x4,x4,1
+	cbnz x4,square_painter
+	mov x4,xzr
+	add x4,x4,60
 
 InfLoop:
 	b InfLoop
+
+
+paint_row:
+	stur w11,[x0,#0] //paint first pixel
+	add x0,x0,4 //select next pixel
+	sub x3,x3,1 //decrements counter
+	cbnz x3,paint_row//check if counter is zero
+	mov x3,xzr//
+	add x3,x3,#60//restores pixel counter
+	br lr
